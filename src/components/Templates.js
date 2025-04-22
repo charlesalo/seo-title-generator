@@ -21,18 +21,34 @@ const Templates = ({ name, mainLocation, state }) => {
     const abbrevState = getAbbreviatedState(state);
     
     const formatLocation = (main, region) => region ? `${main}, ${region}` : `${main}`;
-  
     const fullLocation = formatLocation(mainLocation, state);
     const shortLocation = formatLocation(mainLocation, abbrevState);
     const minLocation = formatLocation(mainLocation, '');
   
-    const full = template.replaceAll('[name]', name).replaceAll('[location]', fullLocation);
+    // Step 1: Base replacements
+    const raw = template.replaceAll('[name]', name);
+  
+    // Step 2: Try full location
+    const full = raw.replaceAll('[location]', fullLocation);
     if (full.length <= 60) return full;
   
-    const short = template.replaceAll('[name]', name).replaceAll('[location]', shortLocation);
+    // Step 3: Abbreviated state
+    const short = raw.replaceAll('[location]', shortLocation);
     if (short.length <= 60) return short;
   
-    return template.replaceAll('[name]', name).replaceAll('[location]', minLocation);
+    // Step 4: Just mainLocation
+    const minimal = raw.replaceAll('[location]', minLocation);
+    if (minimal.length <= 60) return minimal;
+  
+    // Step 5: Also abbreviate Real Estate references
+    const minimized = minimal
+      .replace(/Real Estate Agents/g, 'RE Agents')
+      .replace(/Real Estate Agent/g, 'RE Agent');
+  
+    if (minimized.length <= 60) return minimized;
+  
+    // Step 6: If still too long, return the minimized anyway
+    return minimized;
   };
   
   const templates = {
